@@ -1,0 +1,14 @@
+asgiref==3.8.1
+bcrypt==5.0.0
+cffi==2.0.0
+cryptography==46.0.3
+Django==5.2.3
+django-cors-headers==4.7.0
+djangorestframework==3.16.0
+invoke==2.2.1
+numpy==2.3.5
+paramiko==4.0.0
+pycparser==2.23
+PyNaCl==1.6.1
+sqlparse==0.5.3
+tzdata==2025.2
