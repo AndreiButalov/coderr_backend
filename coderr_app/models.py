@@ -34,9 +34,7 @@ class OfferDetail(models.Model):
         ('premium', 'Premium'),
     )
 
-    offer = models.ForeignKey(
-        Offer, on_delete=models.CASCADE, related_name='details'
-    )
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='details')
     offer_type = models.CharField(max_length=10, choices=OFFER_TYPES)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_time_in_days = models.PositiveIntegerField()
@@ -56,15 +54,9 @@ class Order(models.Model):
         ('cancelled', 'Cancelled'),
     )
 
-    customer_user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='customer_orders'
-    )
-    business_user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='business_orders'
-    )
-    offer = models.ForeignKey(
-        Offer, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    customer_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='customer_orders')
+    business_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='business_orders')
+    offer = models.ForeignKey(Offer, on_delete=models.SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=255)
     revisions = models.PositiveIntegerField()
     delivery_time_in_days = models.PositiveIntegerField()
@@ -80,9 +72,7 @@ class Order(models.Model):
 
 
 class Review(models.Model):
-    business_user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='reviews'
-    )
+    business_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     customer_user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='given_reviews'
     )
