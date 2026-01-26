@@ -10,6 +10,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     file = models.CharField(blank=True, null=True) # hier andere fiels 
     tel = models.CharField(max_length=30, blank=True)
+    location = models.CharField(max_length=30, blank=True)
     description = models.TextField(blank=True)
     working_hours = models.CharField(max_length=100, blank=True)
     type = models.CharField(max_length=10, choices=USER_TYPES)

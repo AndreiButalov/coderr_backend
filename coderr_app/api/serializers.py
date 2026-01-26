@@ -15,14 +15,14 @@ class ProfileSerializer(serializers.ModelSerializer):
             'user',
             'username',
             'first_name',
-            'last_name',
-            'email',
+            'last_name',            
             'file',
             'location',
             'tel',
             'description',
             'working_hours',
             'type',
+            'email',
             'created_at',
         ]
         read_only_fields = ['user', 'type', 'created_at']

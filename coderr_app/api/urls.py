@@ -6,6 +6,6 @@ router = DefaultRouter()
 router.register(r'profiles', ProfileViewSet, basename='profiles')
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
 
