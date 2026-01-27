@@ -6,6 +6,7 @@ from .serializers import ProfileSerializer
 
 
 
+
 class ProfileViewSet(viewsets.GenericViewSet,
                      mixins.RetrieveModelMixin,
                      mixins.UpdateModelMixin,
@@ -14,14 +15,12 @@ class ProfileViewSet(viewsets.GenericViewSet,
     Profile API:
     - GET /api/profile/{pk}/
     - PATCH /api/profile/{pk}/
-    - GET /api/profiles/business/
-    - GET /api/profiles/customer/
+    - GET /api/profiles/?type=business
+    - GET /api/profiles/?type=customer
     """
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
     # permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-    # filter_backends = [filters.SearchFilter]
-    # search_fields = ['type', 'location', 'user__username']
 
     def get_queryset(self):
         """
