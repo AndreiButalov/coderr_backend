@@ -24,19 +24,26 @@ class RegistrationSerializer(serializers.Serializer):
             raise serializers.ValidationError("Email already exists.")
         return value
 
+    
     def create(self, validated_data):
         validated_data.pop('repeated_password')
         user_type = validated_data.pop('type')
+        first_name = validated_data.pop('first_name', '')
+        last_name = validated_data.pop('last_name', '')
 
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
-            password=validated_data['password']
+            password=validated_data['password'],
+            first_name=first_name,
+            last_name=last_name
         )
 
         Profile.objects.create(
             user=user,
-            type=user_type
+            type=user_type,
+            first_name=first_name,
+            last_name=last_name
         )
 
         return user

@@ -14,6 +14,8 @@ class Profile(models.Model):
     description = models.TextField(blank=True)
     working_hours = models.CharField(max_length=100, blank=True)
     type = models.CharField(max_length=10, choices=USER_TYPES)
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
