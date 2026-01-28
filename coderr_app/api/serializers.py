@@ -65,7 +65,6 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
 
 class BusinessProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
-
     class Meta:
         model = Profile
         fields = [
@@ -76,9 +75,7 @@ class BusinessProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
     read_only_fields = ['user', 'type']
 
 
-
 class CustomerProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
-
     class Meta:
         model = Profile
         fields = ['user', 'username', 'first_name', 'last_name', 'file', 'type']
