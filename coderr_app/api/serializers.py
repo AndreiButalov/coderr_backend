@@ -19,7 +19,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             'user', 'username', 'first_name', 'last_name', 'file', 'location', 'tel',
             'description', 'working_hours', 'type', 'email', 'created_at'
             ]
-        read_only_fields = ['user', 'type', 'created_at']
+        
+    read_only_fields = ['user', 'type', 'created_at']
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', {})
@@ -42,7 +43,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', required=False)
-    
+
     class Meta:
         model = Profile
         fields = [
@@ -62,3 +63,24 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+class BusinessProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = [
+            'user', 'username', 'first_name', 'last_name', 'file', 'location', 'tel',
+            'description', 'working_hours', 'type'
+            ]
+        
+    read_only_fields = ['user', 'type']
+
+
+
+class CustomerProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = ['user', 'username', 'first_name', 'last_name', 'file', 'type']
+        
+    read_only_fields = ['user', 'type']
