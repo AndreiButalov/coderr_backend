@@ -46,40 +46,16 @@ class ProfileViewSet(viewsets.GenericViewSet,
         )
         return Response(read_serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['get'], url_path='business', url_name='business-profiles')
+    @action(detail=False, url_path='business', url_name='business-profiles')
     def business_profiles(self, request):
-        """
-        Gibt alle Geschäftsnutzer zurück.
-        """
         queryset = self.get_queryset().filter(type='business')
-        for profile in queryset:
-            for field in ['first_name', 'last_name', 'location', 'tel', 'description', 'working_hours']:
-                if getattr(profile, field) is None:
-                    setattr(profile, field, '')
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = BusinessProfileSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'], url_path='customer', url_name='customer-profiles')
+    @action(detail=False, url_path='customer', url_name='customer-profiles')
     def customer_profiles(self, request):
-        """
-        Gibt alle Kundenprofile zurück.
-        """
         queryset = self.get_queryset().filter(type='customer')
-        for profile in queryset:
-            for field in ['first_name', 'last_name', 'location', 'tel', 'description', 'working_hours']:
-                if getattr(profile, field) is None:
-                    setattr(profile, field, '')
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = CustomerProfileSerializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
 
-class BusinessProfileListView(generics.ListAPIView):
-    """
-    Gibt eine Liste aller Geschäftsnutzer zurück.
-    Felder first_name, last_name, location, tel, description und working_hours
-    werden automatisch im Serializer auf '' gesetzt, wenn sie None sind.
-    """
-    serializer_class = BusinessProfileSerializer
-
-    def get_queryset(self):
-        return Profile.objects.filter(type='business')
