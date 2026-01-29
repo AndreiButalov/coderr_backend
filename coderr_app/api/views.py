@@ -1,8 +1,10 @@
-from rest_framework import viewsets, mixins, filters, status, generics
+from rest_framework import viewsets, mixins, status, generics
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from coderr_app.models import Profile
-from .serializers import ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer
+from coderr_app.models import Profile, OfferDetail
+from .serializers import (
+    ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
+    OfferDetailSerializer,
+    )
 
 
 class ProfileViewSet(viewsets.GenericViewSet,
@@ -49,3 +51,8 @@ class CustomerProfileListView(generics.ListAPIView):
 
     def get_queryset(self):        
         return Profile.objects.filter(type='customer')
+    
+
+class OfferDetailView(generics.RetrieveAPIView):
+    queryset = OfferDetail.objects.all()
+    serializer_class = OfferDetailSerializer

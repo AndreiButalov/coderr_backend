@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from coderr_app.models import Profile
+from coderr_app.models import Profile, OfferDetail
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -81,3 +81,10 @@ class CustomerProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
         fields = ['user', 'username', 'first_name', 'last_name', 'file', 'type']
         
     read_only_fields = ['user', 'type']
+
+
+
+class OfferDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfferDetail
+        fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']

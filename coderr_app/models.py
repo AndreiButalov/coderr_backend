@@ -42,11 +42,12 @@ class OfferDetail(models.Model):
     )
 
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='details')
-    offer_type = models.CharField(max_length=10, choices=OFFER_TYPES)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    delivery_time_in_days = models.PositiveIntegerField()
+    title = models.CharField(max_length=100, blank=True) 
     revisions = models.PositiveIntegerField(default=0)
+    delivery_time_in_days = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     features = models.JSONField(default=list)
+    offer_type = models.CharField(max_length=10, choices=OFFER_TYPES)
 
     def __str__(self):
         return f"{self.offer.title} - {self.offer_type}"
