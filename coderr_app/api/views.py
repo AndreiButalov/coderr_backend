@@ -1,7 +1,7 @@
 from rest_framework import viewsets, mixins, status, generics
 from rest_framework.response import Response
+from .pagination import OfferPagination
 from coderr_app.models import Profile, OfferDetail, Offer
-from rest_framework.pagination import PageNumberPagination
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
     OfferDetailSerializer, OfferSerializer
@@ -59,11 +59,6 @@ class OfferDetailView(generics.RetrieveAPIView):
     serializer_class = OfferDetailSerializer
 
 
-
-class OfferPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
 
 class OfferListView(generics.ListAPIView):
     queryset = Offer.objects.all().order_by('-created_at')
