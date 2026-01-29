@@ -62,20 +62,15 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
-        # Hol das Detail
         instance = self.get_object()
         offer = instance.offer
-
-        # Check permission
         if offer.user != request.user:
             raise PermissionDenied("Du darfst dieses Angebotsdetail nicht bearbeiten.")
 
-        # PATCH Update des Details
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        # Serialisiere das **gesamte Offer**
+        
         offer_serializer = OfferPatchSerializer(offer, context={'request': request})
         return Response(offer_serializer.data, status=status.HTTP_200_OK)
 
