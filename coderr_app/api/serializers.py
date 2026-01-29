@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from coderr_app.models import Profile, OfferDetail
+from coderr_app.models import Profile, OfferDetail, Offer
+from rest_framework.reverse import reverse
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -88,3 +89,52 @@ class OfferDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfferDetail
         fields = ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']
+
+
+
+class OfferDetailLinkSerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OfferDetail
+        fields = ['id', 'url']
+
+    def get_url(self, obj):
+        request = self.context.get('request')
+        return reverse('offerdetail-detail', args=[obj.id], request=request)
+
+
+class OfferSerializer(serializers.ModelSerializer):
+    details = OfferDetailLinkSerializer(many=True, source='details', read_only=True)
+    min_price = serializers.SerializerMethodField()
+    min_delivery_time = serializers.SerializerMethodField()
+    user_details = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Offer
+        fields = [
+            'id', 'user', 'title', 'image', 'description', 'created_at', 'updated_at',
+            'details', 'min_price', 'min_delivery_time', 'user_details'
+        ]
+
+    def get_min_price(self, obj):
+        details = obj.details.all()
+        if details.exists():
+            return min([d.price for d in details])
+        return 0
+
+    def get_min_delivery_time(self, obj):
+        details = obj.details.all()
+        if details.exists():
+            return min([d.delivery_time_in_days for d in details])
+        return 0
+
+    def get_user_details(self, obj):
+        user = obj.user
+        return {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "username": user.username
+        }
+
+
