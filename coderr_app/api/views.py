@@ -1,10 +1,11 @@
 from rest_framework import viewsets, mixins, status, generics
 from rest_framework.response import Response
 from .pagination import OfferPagination
+from rest_framework.permissions import IsAuthenticated
 from coderr_app.models import Profile, OfferDetail, Offer
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
-    OfferDetailSerializer, OfferSerializer
+    OfferDetailSerializer, OfferSerializer, OfferCreateSerializer
     )
 
 
@@ -60,7 +61,13 @@ class OfferDetailView(generics.RetrieveAPIView):
 
 
 
-class OfferListView(generics.ListAPIView):
+class OfferViewSet(viewsets.ModelViewSet):
     queryset = Offer.objects.all().order_by('-created_at')
-    serializer_class = OfferSerializer
     pagination_class = OfferPagination
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return OfferCreateSerializer
+        return OfferSerializer
+    

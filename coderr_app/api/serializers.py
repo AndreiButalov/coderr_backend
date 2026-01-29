@@ -101,11 +101,11 @@ class OfferDetailLinkSerializer(serializers.ModelSerializer):
 
     def get_url(self, obj):
         request = self.context.get('request')
-        return reverse('offerdetail-detail', args=[obj.id], request=request)
+        return reverse('offer-detail', args=[obj.id], request=request)
 
 
 class OfferSerializer(serializers.ModelSerializer):
-    details = OfferDetailLinkSerializer(many=True, source='details', read_only=True)
+    details = OfferDetailLinkSerializer(many=True)
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
     user_details = serializers.SerializerMethodField()
@@ -138,3 +138,27 @@ class OfferSerializer(serializers.ModelSerializer):
         }
 
 
+class OfferCreateSerializer(serializers.ModelSerializer):
+    details = OfferDetailSerializer(many=True)
+
+    class Meta:
+        model = Offer
+        fields = ['id', 'title', 'image', 'description', 'details']
+
+    def validate_details(self, value):
+        if len(value) != 3:
+            raise serializers.ValidationError(
+                "Ein Angebot muss genau 3 Details enthalten."
+            )
+        return value
+
+    def create(self, validated_data):
+        details_data = validated_data.pop('details')
+        user = self.context['request'].user  # ✅ hier setzen
+
+        offer = Offer.objects.create(user=user, **validated_data)
+
+        for detail_data in details_data:
+            OfferDetail.objects.create(offer=offer, **detail_data)
+
+        return offer
