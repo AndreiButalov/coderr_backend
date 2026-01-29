@@ -162,3 +162,47 @@ class OfferCreateSerializer(serializers.ModelSerializer):
             OfferDetail.objects.create(offer=offer, **detail_data)
 
         return offer
+    
+
+
+class OfferUpdateSerializer(serializers.ModelSerializer):
+    details = OfferDetailSerializer(many=True, required=False)
+
+    class Meta:
+        model = Offer
+        fields = ['title', 'image', 'description', 'details']
+
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop('details', None)
+
+        # 1️⃣ Offer-Felder aktualisieren
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # 2️⃣ Details aktualisieren (falls vorhanden)
+        if details_data is not None:
+            for detail_data in details_data:
+                offer_type = detail_data.get('offer_type')
+
+                try:
+                    detail_instance = instance.details.get(
+                        offer_type=offer_type
+                    )
+                except OfferDetail.DoesNotExist:
+                    continue  # oder raise ValidationError
+
+                for attr, value in detail_data.items():
+                    setattr(detail_instance, attr, value)
+                detail_instance.save()
+
+        return instance
+
+
+
+class OfferPatchSerializer(serializers.ModelSerializer):
+    details = OfferDetailSerializer(many=True)
+
+    class Meta:
+        model = Offer
+        fields = ['id', 'title', 'image', 'description', 'details']

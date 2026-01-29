@@ -2,10 +2,11 @@ from rest_framework import viewsets, mixins, status, generics
 from rest_framework.response import Response
 from .pagination import OfferPagination
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from coderr_app.models import Profile, OfferDetail, Offer
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
-    OfferDetailSerializer, OfferSerializer, OfferCreateSerializer
+    OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer
     )
 
 
@@ -55,10 +56,28 @@ class CustomerProfileListView(generics.ListAPIView):
         return Profile.objects.filter(type='customer')
     
 
-class OfferDetailView(generics.RetrieveAPIView):
+class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
+    permission_classes = [IsAuthenticated]
 
+    def update(self, request, *args, **kwargs):
+        # Hol das Detail
+        instance = self.get_object()
+        offer = instance.offer
+
+        # Check permission
+        if offer.user != request.user:
+            raise PermissionDenied("Du darfst dieses Angebotsdetail nicht bearbeiten.")
+
+        # PATCH Update des Details
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Serialisiere das **gesamte Offer**
+        offer_serializer = OfferPatchSerializer(offer, context={'request': request})
+        return Response(offer_serializer.data, status=status.HTTP_200_OK)
 
 
 class OfferViewSet(viewsets.ModelViewSet):
@@ -69,5 +88,7 @@ class OfferViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create':
             return OfferCreateSerializer
+        if self.action in ['update', 'partial_update']:
+            return OfferUpdateSerializer
         return OfferSerializer
     
