@@ -9,6 +9,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', required=False)    
     first_name = serializers.CharField(default='', allow_blank=True, required=False)
     last_name = serializers.CharField(default='', allow_blank=True, required=False)
+    file = serializers.ImageField(required=False, allow_null=True)
     location = serializers.CharField(default='', allow_blank=True, required=False)
     tel = serializers.CharField(default='', allow_blank=True, required=False)
     description = serializers.CharField(default='', allow_blank=True, required=False)
@@ -109,6 +110,7 @@ class OfferSerializer(serializers.ModelSerializer):
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
     user_details = serializers.SerializerMethodField()
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Offer

@@ -8,7 +8,7 @@ class Profile(models.Model):
         ('business', 'Business'),
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    file = models.CharField(blank=True, null=True) # hier andere fiels 
+    file = models.ImageField(upload_to='profiles/', blank=True, null=True) 
     tel = models.CharField(max_length=30, blank=True)
     location = models.CharField(max_length=30, blank=True)
     description = models.TextField(blank=True)
@@ -25,7 +25,7 @@ class Profile(models.Model):
 class Offer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='offers')
     title = models.CharField(max_length=255)
-    image = models.CharField(blank=True, null=True) # hier andere fiels
+    image = models.ImageField(upload_to='offers/', blank=True, null=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
