@@ -1,13 +1,16 @@
 from rest_framework import viewsets, mixins, status, generics
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-from coderr_app.models import Profile, OfferDetail, Offer
+from django.db.models import Q
+from rest_framework.generics import ListAPIView
+from coderr_app.models import Profile, OfferDetail, Offer, Order
 from .pagination import OfferPagination
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
     OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer,
-    OfferDetailViewSerializer
+    OfferDetailViewSerializer, OrderSerializer, OfferGetDetailSerializer, OrderCreateSerializer
     )
 
 
@@ -89,4 +92,39 @@ class OfferViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return OfferDetailViewSerializer
         return OfferSerializer 
-    
+
+
+
+class OrderCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'profile'):
+            if user.profile.type == 'customer':
+                return Order.objects.filter(customer_user=user)
+            elif user.profile.type == 'business':
+                return Order.objects.filter(business_user=user)
+        return Order.objects.none()
+
+    def post(self, request, *args, **kwargs):
+        serializer = OrderCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        offer_detail = OfferDetail.objects.get(id=serializer.validated_data['offer_detail_id'])
+        user = request.user
+
+        if not hasattr(user, 'profile') or user.profile.type != 'customer':
+            return Response({"detail": "Nur Kunden können Bestellungen erstellen."}, status=403)
+
+        order = OrderSerializer.create_from_offer_detail(offer_detail, customer_user=user)
+        read_serializer = OrderSerializer(order)
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
+
+
+#für kürze zeit
+class OfferGetDetailListView(ListAPIView):
+    queryset = OfferDetail.objects.all()
+    serializer_class = OfferGetDetailSerializer
+    permission_classes = [IsAuthenticated]

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from coderr_app.models import Profile, OfferDetail, Offer
+from coderr_app.models import Profile, OfferDetail, Offer, Order
 from rest_framework.reverse import reverse
 
 
@@ -187,17 +187,8 @@ class OfferUpdateSerializer(serializers.ModelSerializer):
 class OfferDetailViewSerializer(OfferSerializer, serializers.ModelSerializer):
     class Meta:
         model = Offer
-        fields = [
-            'id',
-            'user', 
-            'title',
-            'image',
-            'description',
-            'created_at',
-            'updated_at',
-            'details',
-            'min_price',
-            'min_delivery_time',
+        fields = ['id', 'user', 'title', 'image', 'description', 'created_at',
+            'updated_at', 'details', 'min_price', 'min_delivery_time',
         ]
 
 
@@ -206,3 +197,65 @@ class OfferPatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer
         fields = ['id', 'title', 'image', 'description', 'details']
+
+
+
+class OrderListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'customer_user', 'business_user', 'title', 'revisions', 'delivery_time_in_days',
+            'price', 'features', 'offer_type', 'status', 'created_at', 'updated_at',
+        ]
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'customer_user', 'business_user', 'title', 'revisions', 
+                  'delivery_time_in_days', 'price', 'features', 'offer_type', 
+                  'status', 'created_at']
+
+        read_only_fields = fields  # alles wird nur vom System gesetzt
+
+    @classmethod
+    def create_from_offer_detail(cls, offer_detail, customer_user):
+        """Erstellt eine Order basierend auf OfferDetail."""
+        return cls.Meta.model.objects.create(
+            customer_user=customer_user,
+            business_user=offer_detail.offer.user,
+            offer=offer_detail.offer,
+            title=offer_detail.title,
+            revisions=offer_detail.revisions,
+            delivery_time_in_days=offer_detail.delivery_time_in_days,
+            price=offer_detail.price,
+            features=offer_detail.features,
+            offer_type=offer_detail.offer_type,
+            status='in_progress'
+        )
+    
+
+class OrderCreateSerializer(serializers.Serializer):
+    offer_detail_id = serializers.IntegerField()
+
+    def validate_offer_detail_id(self, value):
+        try:
+            offer_detail = OfferDetail.objects.get(id=value)
+        except OfferDetail.DoesNotExist:
+            raise serializers.ValidationError("OfferDetail existiert nicht.")
+        return value
+
+
+
+#für kürze zeit
+class OfferGetDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfferDetail
+        fields = [
+            'id',
+            'title',
+            'revisions',
+            'delivery_time_in_days',
+            'price',
+            'features',
+            'offer_type'
+        ]
