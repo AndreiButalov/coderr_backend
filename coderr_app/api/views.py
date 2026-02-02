@@ -95,7 +95,7 @@ class OfferViewSet(viewsets.ModelViewSet):
 
 
 
-class OrderCreateView(generics.ListCreateAPIView):
+class OrderView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
 

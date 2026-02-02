@@ -215,7 +215,7 @@ class OrderSerializer(serializers.ModelSerializer):
                   'delivery_time_in_days', 'price', 'features', 'offer_type', 
                   'status', 'created_at']
 
-        read_only_fields = fields  # alles wird nur vom System gesetzt
+        read_only_fields = fields
 
     @classmethod
     def create_from_offer_detail(cls, offer_detail, customer_user):

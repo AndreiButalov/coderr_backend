@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     ProfileViewSet, BusinessProfileListView, CustomerProfileListView, OfferDetailView,
-    OfferViewSet, OrderCreateView, OfferGetDetailListView
+    OfferViewSet, OrderView, OfferGetDetailListView
     )
 
 router = DefaultRouter()
@@ -16,5 +16,5 @@ urlpatterns = [
     path('profiles/customer/', CustomerProfileListView.as_view(), name='business-profiles'),
     path('offerdetails/', OfferGetDetailListView.as_view(), name='offer-detail-list'),
     path('offerdetails/<int:pk>/', OfferDetailView.as_view(), name='offer-detail'),
-    path('orders/', OrderCreateView.as_view(), name='order-list'),
+    path('orders/', OrderView.as_view(), name='order-list'),
 ]
