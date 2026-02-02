@@ -6,7 +6,8 @@ from coderr_app.models import Profile, OfferDetail, Offer
 from .pagination import OfferPagination
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
-    OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer
+    OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer,
+    OfferDetailViewSerializer
     )
 
 
@@ -85,5 +86,7 @@ class OfferViewSet(viewsets.ModelViewSet):
             return OfferCreateSerializer
         if self.action in ['update', 'partial_update']:
             return OfferUpdateSerializer
-        return OfferSerializer
+        if self.action == 'retrieve':
+            return OfferDetailViewSerializer
+        return OfferSerializer 
     

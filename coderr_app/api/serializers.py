@@ -140,19 +140,12 @@ class OfferSerializer(serializers.ModelSerializer):
         }
 
 
-
-class OfferDetailCreateSerializer(OfferDetailSerializer, serializers.ModelSerializer):
-    class Meta:
-        model = OfferDetail
-        exclude = ['id', 'offer']
-
-
 class OfferCreateSerializer(serializers.ModelSerializer):
-    details = OfferDetailCreateSerializer(many=True)
+    details = OfferDetailSerializer(many=True)
 
     class Meta:
         model = Offer
-        fields = ['title', 'image', 'description', 'details']
+        fields = ['id', 'title', 'image', 'description', 'details']
 
     def create(self, validated_data):
         details_data = validated_data.pop('details')
@@ -191,6 +184,21 @@ class OfferUpdateSerializer(serializers.ModelSerializer):
                 detail_instance.save()
         return instance
 
+class OfferDetailViewSerializer(OfferSerializer, serializers.ModelSerializer):
+    class Meta:
+        model = Offer
+        fields = [
+            'id',
+            'user', 
+            'title',
+            'image',
+            'description',
+            'created_at',
+            'updated_at',
+            'details',
+            'min_price',
+            'min_delivery_time',
+        ]
 
 
 class OfferPatchSerializer(serializers.ModelSerializer):
