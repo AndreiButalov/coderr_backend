@@ -145,7 +145,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Offer
-        fields = ['id', 'title', 'image', 'description', 'details']
+        fields = ['title', 'image', 'description', 'details']
 
     def validate_details(self, value):
         if len(value) != 3:
@@ -169,7 +169,7 @@ class OfferUpdateSerializer(serializers.ModelSerializer):
     details = OfferDetailSerializer(many=True, required=False)
     class Meta:
         model = Offer
-        fields = ['title', 'image', 'description', 'details']
+        fields = ['title', 'description', 'details']
 
     def update(self, instance, validated_data):
         details_data = validated_data.pop('details', None)
