@@ -163,7 +163,7 @@ class OfferUpdateSerializer(serializers.ModelSerializer):
     details = OfferDetailSerializer(many=True, required=False)
     class Meta:
         model = Offer
-        fields = ['title', 'description', 'details']
+        fields = ['id', 'title', 'image', 'description', 'details']
 
     def update(self, instance, validated_data):
         details_data = validated_data.pop('details', None)
