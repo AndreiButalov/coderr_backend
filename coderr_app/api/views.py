@@ -159,7 +159,6 @@ class BusinessOrderCountView(APIView):
     def get(self, request, business_user_id):
         business_user = get_object_or_404(User, id=business_user_id)
 
-        # nur Business-Profile zählen
         if not hasattr(business_user, 'profile') or business_user.profile.type != 'business':
             return Response({"detail": "Kein Business User gefunden."}, status=404)
 
