@@ -255,6 +255,19 @@ class OrderCreateSerializer(serializers.Serializer):
 
 
 
+class OrderStatusUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['status']
+
+    def validate_status(self, value):
+        allowed_statuses = ['in_progress', 'completed', 'cancelled']
+        if value not in allowed_statuses:
+            raise serializers.ValidationError(f"Ungültiger Status. Erlaubt: {allowed_statuses}")
+        return value
+
+
+
 #für kürze zeit
 class OfferGetDetailSerializer(serializers.ModelSerializer):
     class Meta:

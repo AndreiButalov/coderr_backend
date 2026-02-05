@@ -4,13 +4,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from coderr_app.models import Profile, OfferDetail, Offer, Order
 from .pagination import OfferPagination
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
     OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer,
-    OfferDetailViewSerializer, OrderSerializer, OfferGetDetailSerializer, OrderCreateSerializer, OrderCreateResponseSerializer
+    OfferDetailViewSerializer, OrderSerializer, OfferGetDetailSerializer, OrderCreateSerializer, OrderCreateResponseSerializer,
+    OrderStatusUpdateSerializer
     )
 
 
@@ -121,6 +122,27 @@ class OrderView(generics.ListCreateAPIView):
         order = OrderSerializer.create_from_offer_detail(offer_detail, customer_user=user)
         read_serializer = OrderCreateResponseSerializer(order)
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+class OrderDetailView(RetrieveUpdateAPIView):
+    queryset = Order.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer  # für GET
+
+    def patch(self, request, *args, **kwargs):
+        order = self.get_object()
+
+        # Berechtigungscheck
+        user = request.user
+        if order.customer_user != user and order.business_user != user:
+            return Response({"detail": "Keine Berechtigung."}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = OrderStatusUpdateSerializer(order, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
 
 
 #für kürze zeit
