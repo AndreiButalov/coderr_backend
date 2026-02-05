@@ -10,7 +10,7 @@ from .pagination import OfferPagination
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
     OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer,
-    OfferDetailViewSerializer, OrderSerializer, OfferGetDetailSerializer, OrderCreateSerializer
+    OfferDetailViewSerializer, OrderSerializer, OfferGetDetailSerializer, OrderCreateSerializer, OrderCreateResponseSerializer
     )
 
 
@@ -119,7 +119,7 @@ class OrderView(generics.ListCreateAPIView):
             return Response({"detail": "Nur Kunden können Bestellungen erstellen."}, status=403)
 
         order = OrderSerializer.create_from_offer_detail(offer_detail, customer_user=user)
-        read_serializer = OrderSerializer(order)
+        read_serializer = OrderCreateResponseSerializer(order)
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
 

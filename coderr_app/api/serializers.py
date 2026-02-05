@@ -213,13 +213,12 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ['id', 'customer_user', 'business_user', 'title', 'revisions', 
                   'delivery_time_in_days', 'price', 'features', 'offer_type', 
-                  'status', 'created_at']
+                  'status', 'created_at', 'updated_at']
 
         read_only_fields = fields
 
     @classmethod
     def create_from_offer_detail(cls, offer_detail, customer_user):
-        """Erstellt eine Order basierend auf OfferDetail."""
         return cls.Meta.model.objects.create(
             customer_user=customer_user,
             business_user=offer_detail.offer.user,
@@ -233,6 +232,16 @@ class OrderSerializer(serializers.ModelSerializer):
             status='in_progress'
         )
     
+
+class OrderCreateResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['id', 'customer_user', 'business_user', 'title', 'revisions', 
+                  'delivery_time_in_days', 'price', 'features', 'offer_type', 
+                  'status', 'created_at']
+
+        read_only_fields = fields
+
 
 class OrderCreateSerializer(serializers.Serializer):
     offer_detail_id = serializers.IntegerField()
