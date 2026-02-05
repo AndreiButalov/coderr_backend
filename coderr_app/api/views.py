@@ -128,12 +128,10 @@ class OrderView(generics.ListCreateAPIView):
 class OrderDetailView(RetrieveUpdateAPIView):
     queryset = Order.objects.all()
     permission_classes = [IsAuthenticated]
-    serializer_class = OrderSerializer  # für GET
+    serializer_class = OrderSerializer
 
     def patch(self, request, *args, **kwargs):
         order = self.get_object()
-
-        # Berechtigungscheck
         user = request.user
         if order.customer_user != user and order.business_user != user:
             return Response({"detail": "Keine Berechtigung."}, status=status.HTTP_403_FORBIDDEN)
@@ -141,8 +139,16 @@ class OrderDetailView(RetrieveUpdateAPIView):
         serializer = OrderStatusUpdateSerializer(order, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
         return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        order = self.get_object()
+
+        if not request.user.is_staff:
+            return Response({"detail": "Keine Berechtigung."}, status=status.HTTP_403_FORBIDDEN)
+
+        order.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 #für kürze zeit
