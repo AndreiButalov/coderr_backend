@@ -1,5 +1,6 @@
 from rest_framework import viewsets, mixins, status, generics
 from rest_framework.views import APIView
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
@@ -7,6 +8,7 @@ from django.db.models import Q
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from coderr_app.models import Profile, OfferDetail, Offer, Order
 from .pagination import OfferPagination
+from django.shortcuts import get_object_or_404
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
     OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer,
@@ -149,6 +151,35 @@ class OrderDetailView(RetrieveUpdateAPIView):
 
         order.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class BusinessOrderCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, business_user_id):
+        business_user = get_object_or_404(User, id=business_user_id)
+
+        # nur Business-Profile zählen
+        if not hasattr(business_user, 'profile') or business_user.profile.type != 'business':
+            return Response({"detail": "Kein Business User gefunden."}, status=404)
+
+        order_count = Order.objects.filter(business_user=business_user, status='in_progress').count()
+        return Response({"order_count": order_count})
+
+
+
+class BusinessCompletedOrderCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, business_user_id):
+        business_user = get_object_or_404(User, id=business_user_id)
+
+        if not hasattr(business_user, 'profile') or business_user.profile.type != 'business':
+            return Response({"detail": "Kein Business User gefunden."}, status=404)
+
+        completed_order_count = Order.objects.filter(business_user=business_user, status='completed').count()
+        return Response({"completed_order_count": completed_order_count})
+
 
 
 #für kürze zeit
