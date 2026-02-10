@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, ListCreateAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from .pagination import OfferPagination
 from django.shortcuts import get_object_or_404
@@ -208,6 +208,49 @@ class ReviewListView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         review = serializer.save()
         return Response(ReviewSerializer(review).data, status=201)
+
+
+
+
+class ReviewDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        review = self.get_object()
+
+        # 🔒 nur der Ersteller darf bearbeiten
+        if review.reviewer != request.user:
+            return Response(
+                {"detail": "Du darfst diese Bewertung nicht bearbeiten."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # nur rating + description dürfen bearbeitet werden
+        data = {
+            key: request.data[key]
+            for key in ['rating', 'description']
+            if key in request.data
+        }
+
+        serializer = self.get_serializer(review, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, *args, **kwargs):
+        review = self.get_object()
+
+        # 🔒 nur der Ersteller darf löschen
+        if review.reviewer != request.user:
+            return Response(
+                {"detail": "Du darfst diese Bewertung nicht löschen."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 

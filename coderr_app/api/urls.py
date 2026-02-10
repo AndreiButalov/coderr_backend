@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ProfileViewSet, BusinessProfileListView, CustomerProfileListView, OfferDetailView,
     OfferViewSet, OrderView, OfferGetDetailListView, OrderDetailView, BusinessCompletedOrderCountView,
-    BusinessOrderCountView, ReviewListView
+    BusinessOrderCountView, ReviewListView, ReviewDetailView
     )
 
 router = DefaultRouter()
@@ -22,4 +22,5 @@ urlpatterns = [
     path('order-count/<int:business_user_id>/', BusinessOrderCountView.as_view(), name='order-count'),
     path('completed-order-count/<int:business_user_id>/', BusinessCompletedOrderCountView.as_view(), name='completed-order-count'),
     path('reviews/', ReviewListView.as_view(), name='review-list'),
+    path('reviews/<int:pk>/', ReviewDetailView.as_view(), name='review-detail'),
 ]
