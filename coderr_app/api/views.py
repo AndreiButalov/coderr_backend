@@ -5,15 +5,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
-from coderr_app.models import Profile, OfferDetail, Offer, Order
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, ListCreateAPIView
+from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from .pagination import OfferPagination
 from django.shortcuts import get_object_or_404
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
     OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer,
     OfferDetailViewSerializer, OrderSerializer, OfferGetDetailSerializer, OrderCreateSerializer, OrderCreateResponseSerializer,
-    OrderStatusUpdateSerializer
+    OrderStatusUpdateSerializer, ReviewSerializer, ReviewCreateSerializer
     )
 
 
@@ -178,6 +178,36 @@ class BusinessCompletedOrderCountView(APIView):
 
         completed_order_count = Order.objects.filter(business_user=business_user, status='completed').count()
         return Response({"completed_order_count": completed_order_count})
+
+
+
+class ReviewListView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = Review.objects.all()
+        params = self.request.query_params
+
+        if business_id := params.get('business_user_id'):
+            queryset = queryset.filter(business_user_id=business_id)
+
+        if reviewer_id := params.get('reviewer_id'):
+            queryset = queryset.filter(reviewer_id=reviewer_id)
+
+        if ordering := params.get('ordering'):
+            if ordering.lstrip('-') in ['rating', 'updated_at']:
+                queryset = queryset.order_by(ordering)
+
+        return queryset
+
+    def get_serializer_class(self):
+        return ReviewCreateSerializer if self.request.method == 'POST' else ReviewSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = ReviewCreateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        review = serializer.save()
+        return Response(ReviewSerializer(review).data, status=201)
 
 
 

@@ -80,10 +80,13 @@ class Order(models.Model):
 
 
 class Review(models.Model):
-    business_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
-    customer_user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='given_reviews'
-    )
+    business_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_reviews')
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_reviews')
     rating = models.PositiveSmallIntegerField()
-    comment = models.TextField(blank=True)
+    description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Review {self.rating} for {self.business_user.username}"
+
