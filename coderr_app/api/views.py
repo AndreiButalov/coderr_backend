@@ -220,14 +220,12 @@ class ReviewDetailView(RetrieveUpdateDestroyAPIView):
     def patch(self, request, *args, **kwargs):
         review = self.get_object()
 
-        # 🔒 nur der Ersteller darf bearbeiten
         if review.reviewer != request.user:
             return Response(
                 {"detail": "Du darfst diese Bewertung nicht bearbeiten."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # nur rating + description dürfen bearbeitet werden
         data = {
             key: request.data[key]
             for key in ['rating', 'description']
@@ -242,7 +240,6 @@ class ReviewDetailView(RetrieveUpdateDestroyAPIView):
     def delete(self, request, *args, **kwargs):
         review = self.get_object()
 
-        # 🔒 nur der Ersteller darf löschen
         if review.reviewer != request.user:
             return Response(
                 {"detail": "Du darfst diese Bewertung nicht löschen."},
