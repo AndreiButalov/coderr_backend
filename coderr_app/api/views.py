@@ -2,9 +2,10 @@ from rest_framework import viewsets, mixins, status, generics
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
+from django.db.models import Avg, Count
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from .pagination import OfferPagination
@@ -248,6 +249,37 @@ class ReviewDetailView(RetrieveUpdateDestroyAPIView):
 
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+class BaseInfoView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            review_stats = Review.objects.aggregate(
+                review_count=Count('id'),
+                average_rating=Avg('rating')
+            )
+            review_count = review_stats['review_count'] or 0
+            average_rating = round(review_stats['average_rating'] or 0, 2)
+
+            business_profile_count = Profile.objects.filter(type='business').count()
+            offer_count = Offer.objects.count()
+
+            data = {
+                "review_count": review_count,
+                "average_rating": average_rating,
+                "business_profile_count": business_profile_count,
+                "offer_count": offer_count
+            }
+            return Response(data, status=200)
+
+        except Exception:
+            return Response(
+                {"detail": "Interner Serverfehler."},
+                status=500
+            )
 
 
 
