@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from .serializers import (
     ProfileSerializer, ProfileUpdateSerializer, BusinessProfileSerializer, CustomerProfileSerializer, 
     OfferDetailSerializer, OfferSerializer, OfferCreateSerializer, OfferUpdateSerializer, OfferPatchSerializer,
-    OfferDetailViewSerializer, OrderSerializer, OfferGetDetailSerializer, OrderCreateSerializer, OrderCreateResponseSerializer,
+    OfferDetailViewSerializer, OrderSerializer, OrderCreateSerializer, OrderCreateResponseSerializer,
     OrderStatusUpdateSerializer, ReviewSerializer, ReviewCreateSerializer
     )
 
@@ -280,11 +280,4 @@ class BaseInfoView(APIView):
                 {"detail": "Interner Serverfehler."},
                 status=500
             )
-
-
-
-#für kürze zeit
-class OfferGetDetailListView(ListAPIView):
-    queryset = OfferDetail.objects.all()
-    serializer_class = OfferGetDetailSerializer
-    permission_classes = [IsAuthenticated]
+        

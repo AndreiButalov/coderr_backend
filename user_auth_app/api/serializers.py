@@ -8,6 +8,8 @@ class RegistrationSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     repeated_password = serializers.CharField(write_only=True)
     type = serializers.ChoiceField(choices=Profile.USER_TYPES)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
 
     def validate(self, data):
         if data['password'] != data['repeated_password']:

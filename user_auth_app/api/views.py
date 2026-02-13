@@ -42,17 +42,17 @@ class LoginView(APIView):
         try:
             user = User.objects.get(username=username)
         except User.DoesNotExist:
-            return Response({'ok': False, 'error': 'Benutzername nicht gefunden'}, status=400)
+            return Response({'error': 'Ungültige Anfragedaten'}, status=400)
 
         user = authenticate(username=user.username, password=password)
         if user is not None:
             token, _ = Token.objects.get_or_create(user=user)
 
             return Response({
-                'token': token.key,
-                'user_id': user.id,
-                'email': user.email,
-                'username': user.username
-            }, status=200)
+                "token": token.key,
+                "username": user.username,
+                "email": user.email,
+                "user_id": user.id
+            }, status=status.HTTP_200_OK)
 
         return Response({'ok': False, 'error': 'Falsches Passwort'}, status=400)
