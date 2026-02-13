@@ -22,16 +22,22 @@ class ProfileViewSet(viewsets.GenericViewSet,
                      mixins.RetrieveModelMixin,
                      mixins.UpdateModelMixin,
                      mixins.ListModelMixin):
-   
     queryset = Profile.objects.all()
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         if self.action in ['update', 'partial_update']:
-            return ProfileUpdateSerializer        
+            return ProfileUpdateSerializer
         return ProfileSerializer
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
+
+        if instance.user != request.user:
+            return Response(
+                {"detail": "Authentifizierter Benutzer ist nicht der Eigentümer Profils."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         serializer = ProfileUpdateSerializer(
             instance,

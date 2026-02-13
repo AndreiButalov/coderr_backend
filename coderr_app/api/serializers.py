@@ -45,6 +45,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', required=False)
+    first_name = serializers.CharField(default='', allow_blank=True, required=False)
+    last_name = serializers.CharField(default='', allow_blank=True, required=False)
+    location = serializers.CharField(default='', allow_blank=True, required=False)
+    tel = serializers.CharField(default='', allow_blank=True, required=False)
+    description = serializers.CharField(default='', allow_blank=True, required=False)
+    working_hours = serializers.CharField(default='', allow_blank=True, required=False)
 
     class Meta:
         model = Profile
@@ -54,14 +60,14 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', None)
-
         if user_data and 'email' in user_data:
             instance.user.email = user_data['email']
             instance.user.save()
 
         for attr, value in validated_data.items():
+            if value is None:
+                value = ''
             setattr(instance, attr, value)
-
         instance.save()
         return instance
 
