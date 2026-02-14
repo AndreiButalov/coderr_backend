@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
 from django.db.models import Avg, Count
+from .filters import OfferFilterBackend
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from .pagination import OfferPagination
@@ -92,9 +93,14 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class OfferViewSet(viewsets.ModelViewSet):
-    queryset = Offer.objects.all().order_by('-created_at')
+    queryset = Offer.objects.all().select_related('user').prefetch_related('details')
     pagination_class = OfferPagination
-    permission_classes = [IsAuthenticated]
+    filter_backends = [OfferFilterBackend]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -103,7 +109,8 @@ class OfferViewSet(viewsets.ModelViewSet):
             return OfferUpdateSerializer
         if self.action == 'retrieve':
             return OfferDetailViewSerializer
-        return OfferSerializer 
+        return OfferSerializer
+
 
 
 
