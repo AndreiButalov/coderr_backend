@@ -13,7 +13,7 @@ router.register(r'offers', OfferViewSet, basename='offer')
 urlpatterns = [
     path('', include(router.urls)), 
     path('profiles/business/', BusinessProfileListView.as_view(), name='business-profiles'),
-    path('profiles/customer/', CustomerProfileListView.as_view(), name='business-profiles'),
+    path('profiles/customer/', CustomerProfileListView.as_view(), name='customer-profiles'),
     path('offerdetails/<int:pk>/', OfferDetailView.as_view(), name='offer-detail'),
     path('orders/', OrderView.as_view(), name='order-list'),
     path('orders/<int:pk>/', OrderDetailView.as_view(), name='order-detail'),
