@@ -97,11 +97,6 @@ class OfferViewSet(viewsets.ModelViewSet):
     pagination_class = OfferPagination
     filter_backends = [OfferFilterBackend]
 
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
-        return [IsAuthenticated()]
-
     def get_serializer_class(self):
         if self.action == 'create':
             return OfferCreateSerializer
@@ -111,7 +106,20 @@ class OfferViewSet(viewsets.ModelViewSet):
             return OfferDetailViewSerializer
         return OfferSerializer
 
+    def perform_create(self, serializer):
+        user = self.request.user
+        if not hasattr(user, 'profile') or user.profile.type != 'business':
+            raise PermissionDenied("Nur User mit Profiltyp 'business' dürfen Angebote erstellen.")
 
+        serializer.save()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        offer = serializer.save()
+        read_serializer = OfferCreateSerializer(offer, context={'request': request})
+
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
 
 class OrderView(generics.ListCreateAPIView):
@@ -140,7 +148,6 @@ class OrderView(generics.ListCreateAPIView):
         order = OrderSerializer.create_from_offer_detail(offer_detail, customer_user=user)
         read_serializer = OrderCreateResponseSerializer(order)
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
-
 
 
 class OrderDetailView(RetrieveUpdateAPIView):
@@ -182,7 +189,6 @@ class BusinessOrderCountView(APIView):
         return Response({"order_count": order_count})
 
 
-
 class BusinessCompletedOrderCountView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -194,7 +200,6 @@ class BusinessCompletedOrderCountView(APIView):
 
         completed_order_count = Order.objects.filter(business_user=business_user, status='completed').count()
         return Response({"completed_order_count": completed_order_count})
-
 
 
 class ReviewListView(ListCreateAPIView):
@@ -224,8 +229,6 @@ class ReviewListView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
         review = serializer.save()
         return Response(ReviewSerializer(review).data, status=201)
-
-
 
 
 class ReviewDetailView(RetrieveUpdateDestroyAPIView):
@@ -266,7 +269,6 @@ class ReviewDetailView(RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class BaseInfoView(APIView):
     permission_classes = [AllowAny]
 
@@ -294,5 +296,4 @@ class BaseInfoView(APIView):
             return Response(
                 {"detail": "Interner Serverfehler."},
                 status=500
-            )
-        
+            )        

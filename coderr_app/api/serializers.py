@@ -153,15 +153,41 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         model = Offer
         fields = ['id', 'title', 'image', 'description', 'details']
 
+    def validate(self, attrs):
+        details = attrs.get('details', [])
+
+        if len(details) != 3:
+            raise serializers.ValidationError(
+                "Ein Offer muss genau 3 Details enthalten."
+            )
+
+        offer_types = [d.get('offer_type') for d in details]
+        required_types = {'basic', 'standard', 'premium'}
+
+        if set(offer_types) != required_types:
+            raise serializers.ValidationError(
+                "Es müssen genau die offer_types 'basic', 'standard' und 'premium' enthalten sein."
+            )
+
+        return attrs
+
     def create(self, validated_data):
+        request = self.context['request']
         details_data = validated_data.pop('details')
+
         offer = Offer.objects.create(
-            user=self.context['request'].user,
+            user=request.user,
             **validated_data
         )
+
         for detail in details_data:
-            OfferDetail.objects.create(offer=offer, **detail)
+            OfferDetail.objects.create(
+                offer=offer,
+                **detail
+            )
+
         return offer
+
     
 
 
