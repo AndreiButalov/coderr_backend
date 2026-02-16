@@ -6,15 +6,29 @@ Das Projekt unterstützt **Image-Uploads**, **rollenbasierte Profile** und eine 
 
 ---
 
+
+# Coderr Platform API
+
+Dies ist die Backend-API für die **Coderr Plattform**, entwickelt mit **Django** und **Django REST Framework (DRF)**.  
+Die Plattform ermöglicht:
+- Benutzerregistrierung und Login (Kunden und Business User)
+- Management von Profilen
+- Verwaltung von Angeboten (Offers) und Angebotsdetails
+- Bestellungen (Orders) zwischen Kunden und Business
+- Bewertungen (Reviews) für Business User
+- Basisstatistiken der Plattform
+
+
 ## 🚀 Features
 
-* Benutzerverwaltung (Django `User`)
-* Erweiterte Profile (Customer / Business)
-* Profilbilder & Offer-Bilder (`ImageField`)
-* Angebote mit 3 Detail-Paketen (Basic / Standard / Premium)
-* Bestellungen zwischen Customer & Business
-* Bewertungen (Reviews)
-* REST API mit Django REST Framework
+- **Benutzerrollen**: `customer` oder `business` über Profile
+- **Authentifizierung**: Token-basiert mit DRF `TokenAuthentication`
+- **Profilverwaltung**: CRUD für eigene Profile
+- **Offers & Details**: Angebote mit Basic/Standard/Premium Details
+- **Orders**: Kunden können Bestellungen aus Offers erstellen
+- **Reviews**: Kunden können Business User bewerten
+- **Filterung & Pagination** für Offers und Reviews
+- **Basisinformationen API** für Gesamtstatistiken
 
 ---
 
