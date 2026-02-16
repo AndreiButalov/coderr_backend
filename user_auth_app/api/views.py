@@ -9,6 +9,15 @@ from django.contrib.auth import authenticate
 
 
 class RegistrationView(APIView):
+    """
+    API-View für Benutzerregistrierung.
+    Berechtigungen: AllowAny
+    Ablauf:
+    1. Nimmt POST-Daten entgegen
+    2. Serialisiert und validiert die Daten über RegistrationSerializer
+    3. Erstellt User und Profile
+    4. Gibt Token und Benutzerinformationen zurück
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -31,11 +40,34 @@ class RegistrationView(APIView):
 
 class LoginView(APIView):
     """
-    API-View für Benutzer-Login anhand von Username.
+    API-View für Benutzer-Login anhand von Username und Passwort.
+    Berechtigungen: AllowAny
+    Ablauf:
+    1. POST-Daten 'username' und 'password' entgegennehmen
+    2. Benutzer anhand username suchen
+    3. Passwort überprüfen via authenticate
+    4. Token erzeugen oder abrufen
+    5. Rückgabe von Token und Benutzerinformationen
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """
+        POST-Methode für Login.
+
+        Request-Daten:
+        - username
+        - password
+
+        Response (200):
+        - token: Authentifizierungs-Token
+        - username
+        - email
+        - user_id
+
+        Response (400):
+        - Fehler bei falschem Benutzer oder Passwort
+        """
         username = request.data.get('username')
         password = request.data.get('password')
 

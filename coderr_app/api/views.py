@@ -23,15 +23,32 @@ class ProfileViewSet(viewsets.GenericViewSet,
                      mixins.RetrieveModelMixin,
                      mixins.UpdateModelMixin,
                      mixins.ListModelMixin):
+    """
+    ViewSet für Profile:
+    - Listet alle Profile
+    - Zeigt Details eines Profils
+    - Ermöglicht Update (teilweise und komplett) für den eigenen User
+    Berechtigungen: Nur authentifizierte User.
+    """
     queryset = Profile.objects.all()
     permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
+        """
+        Gibt je nach Aktion den passenden Serializer zurück:
+        - Update / Partial Update -> ProfileUpdateSerializer
+        - Andere Aktionen -> ProfileSerializer
+        """
         if self.action in ['update', 'partial_update']:
             return ProfileUpdateSerializer
         return ProfileSerializer
 
     def partial_update(self, request, *args, **kwargs):
+        """
+        Patch-Methode für Profilupdates.
+        Prüft, ob der authentifizierte User Besitzer des Profils ist.
+        Gibt nach Update die vollständigen Profildaten zurück.
+        """
         instance = self.get_object()
 
         if instance.user != request.user:
@@ -57,6 +74,10 @@ class ProfileViewSet(viewsets.GenericViewSet,
     
 
 class BusinessProfileListView(generics.ListAPIView):
+    """
+    Listet alle Business-Profile.
+    Berechtigungen: Authentifizierte User
+    """
     serializer_class = BusinessProfileSerializer
     permission_classes = [IsAuthenticated]
 
@@ -66,6 +87,10 @@ class BusinessProfileListView(generics.ListAPIView):
 
 
 class CustomerProfileListView(generics.ListAPIView):    
+    """
+    Listet alle Kundenprofile.
+    Berechtigungen: Authentifizierte User
+    """
     serializer_class = CustomerProfileSerializer
     permission_classes = [IsAuthenticated]
 
@@ -74,11 +99,19 @@ class CustomerProfileListView(generics.ListAPIView):
     
 
 class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    CRUD View für OfferDetail:
+    - Retrieve, Update (partial), Destroy
+    Berechtigungen: Authentifizierte User, Update nur durch Besitzer des Angebots
+    """
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
     permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
+        """
+        Überschreibt Update, um nach Änderung des OfferDetail auch das Offer zu serialisieren
+        """
         instance = self.get_object()
         offer = instance.offer
         if offer.user != request.user:
@@ -93,6 +126,16 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class OfferViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet für Offer:
+    - List, Retrieve, Create, Update, Partial Update, Delete
+    - Filterung über OfferFilterBackend
+    - Pagination via OfferPagination
+    Berechtigungen:
+        - List / Retrieve: Authentifiziert
+        - Create: Authentifiziert + BusinessUser
+        - Update / Delete: Authentifiziert + BusinessUser + OfferOwner
+    """
     queryset = Offer.objects.all().select_related('user').prefetch_related('details')
     pagination_class = OfferPagination
     filter_backends = [OfferFilterBackend]
@@ -110,6 +153,13 @@ class OfferViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_serializer_class(self):
+        """
+        Gibt Serializer je nach Aktion zurück:
+        - Create -> OfferCreateSerializer
+        - Update / Partial Update -> OfferUpdateSerializer
+        - Retrieve -> OfferDetailViewSerializer
+        - Default -> OfferSerializer
+        """
         if self.action == 'create':
             return OfferCreateSerializer
         if self.action in ['update', 'partial_update']:
@@ -138,6 +188,12 @@ class OfferViewSet(viewsets.ModelViewSet):
 
 
 class OrderView(generics.ListCreateAPIView):
+    """
+    Listet Orders je nach User-Typ:
+    - Kunde: zeigt eigene Bestellungen
+    - Business: zeigt eigene Angebote/Orders
+    Erstellt Orders aus OfferDetails für Kunden
+    """
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
 
@@ -166,6 +222,11 @@ class OrderView(generics.ListCreateAPIView):
 
 
 class OrderDetailView(RetrieveUpdateAPIView):
+    """
+    Detailansicht einer Order:
+    - Patch: Statusupdate für Kunden und Business
+    - Delete: nur Admins
+    """
     queryset = Order.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
@@ -192,6 +253,9 @@ class OrderDetailView(RetrieveUpdateAPIView):
 
 
 class BusinessOrderCountView(APIView):
+    """
+    API View zur Abfrage der Anzahl in-progress Orders für einen Business User
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, business_user_id):
@@ -205,6 +269,9 @@ class BusinessOrderCountView(APIView):
 
 
 class BusinessCompletedOrderCountView(APIView):
+    """
+    API View zur Abfrage der Anzahl abgeschlossener Orders für einen Business User
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, business_user_id):
@@ -218,6 +285,13 @@ class BusinessCompletedOrderCountView(APIView):
 
 
 class ReviewListView(ListCreateAPIView):
+    """
+    Listet Reviews und ermöglicht Erstellung neuer Reviews.
+    Filterbar nach:
+        - business_user_id
+        - reviewer_id
+        - ordering: rating, updated_at
+    """
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -247,6 +321,11 @@ class ReviewListView(ListCreateAPIView):
 
 
 class ReviewDetailView(RetrieveUpdateDestroyAPIView):
+    """
+    Detailansicht eines Reviews:
+    - Patch: Nur Ersteller darf bearbeiten
+    - Delete: Nur Ersteller darf löschen
+    """
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
@@ -285,6 +364,14 @@ class ReviewDetailView(RetrieveUpdateDestroyAPIView):
 
 
 class BaseInfoView(APIView):
+    """
+    Liefert Basisinformationen für die Plattform:
+    - Gesamtzahl Reviews
+    - Durchschnittliche Bewertung
+    - Anzahl Business Profiles
+    - Anzahl Offers
+    Zugänglich für alle (AllowAny)
+    """
     permission_classes = [AllowAny]
 
     def get(self, request):

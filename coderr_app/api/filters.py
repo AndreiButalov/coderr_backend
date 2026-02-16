@@ -4,8 +4,31 @@ from rest_framework.exceptions import ValidationError
 
 
 class OfferFilterBackend(BaseFilterBackend):
+    """
+    Custom FilterBackend für Offers.
+    Fügt Annotationen für min_price und min_delivery_time hinzu und filtert anschließend
+    das Queryset basierend auf Request-Query-Parametern.
+    """
 
     def filter_queryset(self, request, queryset, view):
+        """
+        Filtert das Offer-Queryset basierend auf den Query-Parametern.
+
+        Query-Parameter:
+        - creator_id: Integer, Filter nach User-ID des Erstellers
+        - min_price: Float, Filter nach minimalem Preis
+        - max_delivery_time: Integer, Filter nach maximaler Lieferzeit in Tagen
+        - search: String, Suche in Titel oder Beschreibung
+        - ordering: Sortierung nach 'updated_at' oder 'min_price', optional '-'
+
+        Validierung:
+        - creator_id muss eine Zahl sein
+        - min_price muss float konvertierbar sein
+        - max_delivery_time muss eine ganze Zahl sein
+        - ordering nur erlaubt: updated_at, -updated_at, min_price, -min_price
+
+        Gibt das gefilterte und sortierte Queryset zurück.
+        """
         queryset = queryset.annotate(
             min_price_value=Min('details__price'),
             min_delivery_time_value=Min('details__delivery_time_in_days')
