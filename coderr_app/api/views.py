@@ -99,15 +99,12 @@ class OfferViewSet(viewsets.ModelViewSet):
     filter_backends = [OfferFilterBackend]
 
     def get_permissions(self):
-        # Öffentlich lesbar
         if self.action in ['list', 'retrieve']:
             return [AllowAny()]
 
-        # Nur Business darf erstellen
         if self.action == 'create':
             return [IsAuthenticated(), IsBusinessUser()]
 
-        # Nur Business + Owner darf bearbeiten/löschen
         if self.action in ['update', 'partial_update', 'destroy']:
             return [IsAuthenticated(), IsBusinessUser(), IsOfferOwner()]
 
