@@ -4,11 +4,10 @@ from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied
-from django.db.models import Q
 from django.db.models import Avg, Count
 from .filters import OfferFilterBackend
 from .permissions import IsBusinessUser, IsOfferOwner
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from .pagination import OfferPagination
 from django.shortcuts import get_object_or_404
