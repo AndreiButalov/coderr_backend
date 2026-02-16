@@ -1,34 +1,48 @@
 # Coderr Backend API
 
-Ein **Django + Django REST Framework** Backend für eine Plattform mit **User-Profilen (Customer / Business)**, **Angeboten (Offers)**, **Offer-Details**, **Bestellungen (Orders)** und **Bewertungen (Reviews)**.
+A Django + Django REST Framework backend for a platform with User Profiles (Customer / Business), Offers, Offer Details, Orders, and Reviews.
 
-Das Projekt unterstützt **Image-Uploads**, **rollenbasierte Profile** und eine saubere REST-API-Struktur.
+The project supports image uploads, role-based profiles, and a clean REST API structure.
 
 ---
 
 
 # Coderr Platform API
 
-Dies ist die Backend-API für die **Coderr Plattform**, entwickelt mit **Django** und **Django REST Framework (DRF)**.  
-Die Plattform ermöglicht:
-- Benutzerregistrierung und Login (Kunden und Business User)
-- Management von Profilen
-- Verwaltung von Angeboten (Offers) und Angebotsdetails
-- Bestellungen (Orders) zwischen Kunden und Business
-- Bewertungen (Reviews) für Business User
-- Basisstatistiken der Plattform
+- This is the backend API for the Coderr Platform, built with Django and Django REST Framework (DRF).
+
+- The platform provides:
+
+- User registration and login (Customer & Business users)
+
+- Profile management
+
+- Offer management (Offers and Offer Details)
+
+- Orders between Customers and Business users
+
+- Reviews for Business users
+
+- Basic platform statistics
 
 
-## 🚀 Features
+# 🚀 Features
 
-- **Benutzerrollen**: `customer` oder `business` über Profile
-- **Authentifizierung**: Token-basiert mit DRF `TokenAuthentication`
-- **Profilverwaltung**: CRUD für eigene Profile
-- **Offers & Details**: Angebote mit Basic/Standard/Premium Details
-- **Orders**: Kunden können Bestellungen aus Offers erstellen
-- **Reviews**: Kunden können Business User bewerten
-- **Filterung & Pagination** für Offers und Reviews
-- **Basisinformationen API** für Gesamtstatistiken
+- User Roles: customer or business via profile model
+
+- Authentication: Token-based authentication using DRF TokenAuthentication
+
+- Profile Management: CRUD operations for own profile
+
+- Offers & Details: Offers with Basic / Standard / Premium options
+
+- Orders: Customers can create orders from offers
+
+- Reviews: Customers can review Business users
+
+- Filtering & Pagination for Offers and Reviews
+
+- Basic Info API for overall platform statistics
 
 ---
 
@@ -38,17 +52,18 @@ Die Plattform ermöglicht:
 * Django
 * Django REST Framework
 * SQLite (DEV)
-* Pillow (für Image Uploads)
+* Pillow (for image uploads)
 
 
 ## 🧪 Testing (Postman / Frontend)
 
-* Authentifizierte Requests erforderlich
-* File Upload nur mit `multipart/form-data`
+- Authenticated requests are required for protected endpoints
+
+- File uploads must use multipart/form-data
 
 ---
 
-## 📌 ToDo / Erweiterungen
+## 📌 ToDo / Future Improvements
 
 * JWT Authentication
 * Permissions (Customer vs Business)
@@ -61,10 +76,23 @@ Die Plattform ermöglicht:
 
 1. **Projekt klonen**
   ```bash
-  git clone https://github.com/AndreiButalov/coderr_backend.git
+  git clone https://github.com/AndreiButalov/coderr_backend.git  
+
+# 🖥 Setup on Windows
   python -m venv env
   "env/Scripts/activate"
   pip install -r requirements.txt
   python manage.py makemigrations
   python manage.py migrate
   python manage.py runserver
+
+
+# 🍎 Setup on macOS
+
+  python3 -m venv env
+  source env/bin/activate
+  pip3 install -r requirements.txt
+  python3 manage.py makemigrations
+  python3 manage.py migrate
+  python3 manage.py runserver
+  http://127.0.0.1:8000/
