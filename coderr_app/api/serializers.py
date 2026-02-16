@@ -187,7 +187,6 @@ class OfferCreateSerializer(serializers.ModelSerializer):
             )
 
         return offer
-
     
 
 
