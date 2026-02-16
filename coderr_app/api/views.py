@@ -7,6 +7,7 @@ from rest_framework.exceptions import PermissionDenied
 from django.db.models import Q
 from django.db.models import Avg, Count
 from .filters import OfferFilterBackend
+from .permissions import IsBusinessUser, IsOfferOwner
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from .pagination import OfferPagination
@@ -97,6 +98,21 @@ class OfferViewSet(viewsets.ModelViewSet):
     pagination_class = OfferPagination
     filter_backends = [OfferFilterBackend]
 
+    def get_permissions(self):
+        # Öffentlich lesbar
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+
+        # Nur Business darf erstellen
+        if self.action == 'create':
+            return [IsAuthenticated(), IsBusinessUser()]
+
+        # Nur Business + Owner darf bearbeiten/löschen
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsBusinessUser(), IsOfferOwner()]
+
+        return [IsAuthenticated()]
+
     def get_serializer_class(self):
         if self.action == 'create':
             return OfferCreateSerializer
@@ -107,17 +123,20 @@ class OfferViewSet(viewsets.ModelViewSet):
         return OfferSerializer
 
     def perform_create(self, serializer):
-        user = self.request.user
-        if not hasattr(user, 'profile') or user.profile.type != 'business':
-            raise PermissionDenied("Nur User mit Profiltyp 'business' dürfen Angebote erstellen.")
-
-        serializer.save()
+        serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(
+            data=request.data,
+            context={'request': request}
+        )
         serializer.is_valid(raise_exception=True)
         offer = serializer.save()
-        read_serializer = OfferCreateSerializer(offer, context={'request': request})
+
+        read_serializer = OfferCreateSerializer(
+            offer,
+            context={'request': request}
+        )
 
         return Response(read_serializer.data, status=status.HTTP_201_CREATED)
 
