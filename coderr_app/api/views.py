@@ -100,7 +100,7 @@ class OfferViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
+            return [IsAuthenticated()]
 
         if self.action == 'create':
             return [IsAuthenticated(), IsBusinessUser()]
