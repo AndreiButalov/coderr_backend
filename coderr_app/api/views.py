@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied
 from django.db.models import Avg, Count
 from .filters import OfferFilterBackend
-from .permissions import IsBusinessUser, IsOfferOwner
+from .permissions import IsBusinessUser, IsOfferOwner, IsBusinessOrderOwner
 from rest_framework.generics import RetrieveUpdateAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from .pagination import OfferPagination
@@ -224,32 +224,28 @@ class OrderView(generics.ListCreateAPIView):
 class OrderDetailView(RetrieveUpdateAPIView):
     """
     Detailansicht einer Order:
-    - Patch: Statusupdate für Kunden und Business
-    - Delete: nur Admins
+    - PATCH: Statusupdate nur für business_user
+    - DELETE: nur Admin
     """
     queryset = Order.objects.all()
-    permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated, IsBusinessOrderOwner]
 
     def patch(self, request, *args, **kwargs):
         order = self.get_object()
-        user = request.user
-        if order.customer_user != user and order.business_user != user:
-            return Response({"detail": "Keine Berechtigung."}, status=status.HTTP_403_FORBIDDEN)
+        self.check_object_permissions(request, order)
 
         serializer = OrderStatusUpdateSerializer(order, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
-
+        return Response(OrderSerializer(order).data, status=200)
+    
     def delete(self, request, *args, **kwargs):
         order = self.get_object()
-
         if not request.user.is_staff:
-            return Response({"detail": "Keine Berechtigung."}, status=status.HTTP_403_FORBIDDEN)
-
+            return Response({"detail": "Keine Berechtigung."}, status=403)
         order.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=204)
 
 
 class BusinessOrderCountView(APIView):

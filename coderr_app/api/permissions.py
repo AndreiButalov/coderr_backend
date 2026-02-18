@@ -39,3 +39,18 @@ class IsOfferOwner(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return obj.user == request.user
+    
+
+
+class IsBusinessOrderOwner(BasePermission):
+    """
+    Nur der Business-User der Order darf den Status ändern.
+    """
+    def has_object_permission(self, request, view, obj):
+        if not request.user.is_authenticated:
+            return False
+
+        if not hasattr(request.user, 'profile') or request.user.profile.type != 'business':
+            return False
+
+        return obj.business_user == request.user
