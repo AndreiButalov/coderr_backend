@@ -19,8 +19,9 @@ class ProfileSerializer(serializers.ModelSerializer):
     """
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.EmailField(source='user.email', required=False)    
-    first_name = serializers.CharField(default='', allow_blank=True, required=False)
-    last_name = serializers.CharField(default='', allow_blank=True, required=False)
+    first_name = serializers.CharField(source='user.first_name', required=False, allow_blank=True)
+    last_name = serializers.CharField(source='user.last_name', required=False, allow_blank=True)
+
     file = serializers.ImageField(required=False, allow_null=True)
     location = serializers.CharField(default='', allow_blank=True, required=False)
     tel = serializers.CharField(default='', allow_blank=True, required=False)
@@ -38,16 +39,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         user_data = validated_data.pop('user', {})
-
         user = instance.user
-        email = user_data.get('email')
-        if email is not None:
-            user.email = email
-            user.save()
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
 
         for attr, value in validated_data.items():
-            if value is None:
-                value = ''
             setattr(instance, attr, value)
         instance.save()
 
@@ -56,13 +53,9 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer für das Aktualisieren von Profilinformationen.
-    E-Mail wird über den User verknüpft aktualisiert.
-    """
     email = serializers.EmailField(source='user.email', required=False)
-    first_name = serializers.CharField(default='', allow_blank=True, required=False)
-    last_name = serializers.CharField(default='', allow_blank=True, required=False)
+    first_name = serializers.CharField(source='user.first_name', required=False, allow_blank=True)
+    last_name = serializers.CharField(source='user.last_name', required=False, allow_blank=True)
     location = serializers.CharField(default='', allow_blank=True, required=False)
     tel = serializers.CharField(default='', allow_blank=True, required=False)
     description = serializers.CharField(default='', allow_blank=True, required=False)
@@ -70,21 +63,20 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = [
-            'first_name', 'last_name', 'location', 'tel', 'description', 'working_hours', 'email'
-            ]
+        fields = ['first_name', 'last_name', 'location', 'tel', 'description', 'working_hours', 'email']
 
     def update(self, instance, validated_data):
-        user_data = validated_data.pop('user', None)
-        if user_data and 'email' in user_data:
-            instance.user.email = user_data['email']
-            instance.user.save()
+        user_data = validated_data.pop('user', {})
+
+        user = instance.user
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
 
         for attr, value in validated_data.items():
-            if value is None:
-                value = ''
             setattr(instance, attr, value)
         instance.save()
+
         return instance
 
 

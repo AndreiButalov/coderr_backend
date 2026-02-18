@@ -13,9 +13,7 @@ class Profile(models.Model):
     location = models.CharField(max_length=30, blank=True)
     description = models.TextField(blank=True)
     working_hours = models.CharField(max_length=100, blank=True)
-    type = models.CharField(max_length=10, choices=USER_TYPES)
-    first_name = models.CharField(max_length=30, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
+    type = models.CharField(max_length=10, choices=USER_TYPES)    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
