@@ -74,9 +74,7 @@ class RegistrationSerializer(serializers.Serializer):
 
         Profile.objects.create(
             user=user,
-            type=user_type,
-            first_name=first_name,
-            last_name=last_name
+            type=user_type
         )
 
         return user
