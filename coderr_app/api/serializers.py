@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from rest_framework.reverse import reverse
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import ValidationError
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -398,15 +400,13 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
         business = attrs['business_user']
 
         if not hasattr(user, 'profile') or user.profile.type != 'customer':
-            raise serializers.ValidationError("Nur Kunden dürfen bewerten.")
-
-        if not hasattr(business, 'profile') or business.profile.type != 'business':
-            raise serializers.ValidationError("Kein gültiger Geschäftsbenutzer.")
+            raise PermissionDenied("Nur Kunden dürfen bewerten.")        
 
         if Review.objects.filter(business_user=business, reviewer=user).exists():
-            raise serializers.ValidationError("Bereits bewertet.")
+            raise PermissionDenied("Bereits bewertet.")
 
         return attrs
+    
 
     def create(self, validated_data):
         return Review.objects.create(
