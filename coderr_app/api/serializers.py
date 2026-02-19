@@ -139,7 +139,6 @@ class OfferSerializer(serializers.ModelSerializer):
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
     user_details = serializers.SerializerMethodField()
-    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Offer
