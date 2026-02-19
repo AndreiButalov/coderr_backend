@@ -183,7 +183,7 @@ class OfferViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         offer = serializer.save()
 
-        read_serializer = OfferSerializer(
+        read_serializer = OfferPatchSerializer(
             offer,
             context={'request': request}
         )
