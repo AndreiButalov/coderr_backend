@@ -145,8 +145,13 @@ class OfferViewSet(viewsets.ModelViewSet):
     filter_backends = [OfferFilterBackend]
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
+        if self.action == 'list':
+        # Liste öffentlich
+             return [AllowAny()]
+
+        if self.action == 'retrieve':
+            # Detail nur für authentifizierte User
+            return [IsAuthenticated()]
 
         if self.action == 'create':
             return [IsAuthenticated(), IsBusinessUser()]

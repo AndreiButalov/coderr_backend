@@ -20,13 +20,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.EmailField(source='user.email', required=False)    
     first_name = serializers.CharField(source='user.first_name', required=False, allow_blank=True)
-    last_name = serializers.CharField(source='user.last_name', required=False, allow_blank=True)
-
-    file = serializers.ImageField(required=False, allow_null=True)
-    location = serializers.CharField(default='', allow_blank=True, required=False)
-    tel = serializers.CharField(default='', allow_blank=True, required=False)
-    description = serializers.CharField(default='', allow_blank=True, required=False)
-    working_hours = serializers.CharField(default='', allow_blank=True, required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False, allow_blank=True)  
 
     class Meta:
         model = Profile
@@ -55,12 +49,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(source='user.email', required=False)
     first_name = serializers.CharField(source='user.first_name', required=False, allow_blank=True)
-    last_name = serializers.CharField(source='user.last_name', required=False, allow_blank=True)
-    location = serializers.CharField(default='', allow_blank=True, required=False)
-    tel = serializers.CharField(default='', allow_blank=True, required=False)
-    description = serializers.CharField(default='', allow_blank=True, required=False)
-    working_hours = serializers.CharField(default='', allow_blank=True, required=False)
-
+    last_name = serializers.CharField(source='user.last_name', required=False, allow_blank=True)  
     class Meta:
         model = Profile
         fields = ['first_name', 'last_name', 'location', 'tel', 'description', 'working_hours', 'email']
