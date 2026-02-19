@@ -133,18 +133,20 @@ class OfferViewSet(viewsets.ModelViewSet):
     - List, Retrieve, Create, Update, Partial Update, Delete
     - Filterung über OfferFilterBackend
     - Pagination via OfferPagination
+
     Berechtigungen:
-        - List / Retrieve: Authentifiziert
+        - List / Retrieve: Öffentlich (AllowAny)
         - Create: Authentifiziert + BusinessUser
         - Update / Delete: Authentifiziert + BusinessUser + OfferOwner
     """
+
     queryset = Offer.objects.all().select_related('user').prefetch_related('details')
     pagination_class = OfferPagination
     filter_backends = [OfferFilterBackend]
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
-            return [IsAuthenticated()]
+            return [AllowAny()]
 
         if self.action == 'create':
             return [IsAuthenticated(), IsBusinessUser()]
@@ -181,7 +183,7 @@ class OfferViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         offer = serializer.save()
 
-        read_serializer = OfferCreateSerializer(
+        read_serializer = OfferSerializer(
             offer,
             context={'request': request}
         )
