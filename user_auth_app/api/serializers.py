@@ -4,16 +4,17 @@ from coderr_app.models import Profile
 
 class RegistrationSerializer(serializers.Serializer):
     """
-    Serializer für Benutzerregistrierung.
+    Serializer for user registration.
 
-    Felder:
-    - username: eindeutiger Benutzername
-    - email: eindeutige Email-Adresse
-    - password: Passwort (write_only)
-    - repeated_password: Passwort zur Bestätigung (write_only)
-    - type: Benutzer-Typ (ChoiceField aus Profile.USER_TYPES, z.B. 'customer' oder 'business')
-    - first_name: optionaler Vorname
-    - last_name: optionaler Nachname
+    Fields:
+        - username: Unique username
+        - email: Unique email address
+        - password: Password (write-only)
+        - repeated_password: Password confirmation (write-only)
+        - type: User type (ChoiceField from Profile.USER_TYPES,
+                e.g., 'customer' or 'business')
+        - first_name: Optional first name
+        - last_name: Optional last name
     """
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
@@ -25,7 +26,10 @@ class RegistrationSerializer(serializers.Serializer):
 
     def validate(self, data):
         """
-        Validiert, dass password und repeated_password übereinstimmen.
+        Validates that the password and repeated_password fields match.
+
+        Raises:
+            ValidationError: If the passwords do not match.
         """
         if data['password'] != data['repeated_password']:
             raise serializers.ValidationError("Passwords do not match.")
@@ -33,7 +37,10 @@ class RegistrationSerializer(serializers.Serializer):
 
     def validate_username(self, value):
         """
-        Prüft, dass der Benutzername noch nicht existiert.
+        Ensures that the username is unique.
+
+        Raises:
+            ValidationError: If the username already exists.
         """
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("Username already exists.")
@@ -41,7 +48,10 @@ class RegistrationSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         """
-        Prüft, dass die Email-Adresse noch nicht existiert.
+        Ensures that the email address is unique.
+
+        Raises:
+            ValidationError: If the email already exists.
         """
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already exists.")
@@ -50,14 +60,14 @@ class RegistrationSerializer(serializers.Serializer):
     
     def create(self, validated_data):
         """
-        Erstellt einen neuen Django User und ein zugehöriges Profile.
+        Creates a new Django User and an associated Profile.
 
-        Schritte:
-        1. Entfernt repeated_password aus den Daten
-        2. Extrahiert user_type, first_name und last_name
-        3. Erstellt User mit create_user (inkl. Passwort-Hash)
-        4. Erstellt zugehöriges Profile mit type und optionalen Namen
-        5. Gibt das erstellte User-Objekt zurück
+        Steps:
+            1. Remove repeated_password from validated data.
+            2. Extract user type, first_name, and last_name.
+            3. Create the User using create_user (handles password hashing).
+            4. Create the associated Profile with the selected type.
+            5. Return the created User instance.
         """
         validated_data.pop('repeated_password')
         user_type = validated_data.pop('type')

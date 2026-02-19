@@ -2,16 +2,17 @@ from rest_framework.pagination import PageNumberPagination
 
 class OfferPagination(PageNumberPagination):
     """
-    Pagination-Klasse für Offer-Listen.
+    Pagination class for Offer list views.
 
-    Einstellungen:
-    - page_size: Standardanzahl der Elemente pro Seite (10)
-    - page_size_query_param: Query-Parameter zur dynamischen Anpassung der Seitengröße ('page_size')
-    - max_page_size: Maximale Elemente pro Seite (100)
+    Configuration:
+        - page_size: Default number of items per page (10)
+        - page_size_query_param: Query parameter that allows clients
+          to dynamically set the page size ('page_size')
+        - max_page_size: Maximum number of items allowed per page (100)
 
-    Beispiel:
+    Example:
         GET /offers/?page=2&page_size=20
-        -> liefert Seite 2 mit maximal 20 Offers
+        -> Returns page 2 with up to 20 offers
     """
     page_size = 10
     page_size_query_param = 'page_size'

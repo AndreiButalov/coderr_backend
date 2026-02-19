@@ -10,17 +10,41 @@ from django.contrib.auth import authenticate
 
 class RegistrationView(APIView):
     """
-    API-View für Benutzerregistrierung.
-    Berechtigungen: AllowAny
-    Ablauf:
-    1. Nimmt POST-Daten entgegen
-    2. Serialisiert und validiert die Daten über RegistrationSerializer
-    3. Erstellt User und Profile
-    4. Gibt Token und Benutzerinformationen zurück
+    API view for user registration.
+
+    Permissions:
+        - AllowAny (no authentication required)
+
+    Workflow:
+        1. Accepts POST data for registration
+        2. Validates data using RegistrationSerializer
+        3. Creates a new User and associated Profile
+        4. Returns authentication token and user information
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """
+        Handles POST requests for user registration.
+
+        Request data:
+            - username
+            - email
+            - password
+            - repeated_password
+            - type
+            - first_name (optional)
+            - last_name (optional)
+
+        Response (201 Created):
+            - token: authentication token
+            - username
+            - email
+            - user_id
+
+        Response (400 Bad Request):
+            - serializer validation errors
+        """
         serializer = RegistrationSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -40,33 +64,36 @@ class RegistrationView(APIView):
 
 class LoginView(APIView):
     """
-    API-View für Benutzer-Login anhand von Username und Passwort.
-    Berechtigungen: AllowAny
-    Ablauf:
-    1. POST-Daten 'username' und 'password' entgegennehmen
-    2. Benutzer anhand username suchen
-    3. Passwort überprüfen via authenticate
-    4. Token erzeugen oder abrufen
-    5. Rückgabe von Token und Benutzerinformationen
+    API view for user login using username and password.
+
+    Permissions:
+        - AllowAny (no authentication required)
+
+    Workflow:
+        1. Accepts POST data: 'username' and 'password'
+        2. Verifies that the user exists
+        3. Authenticates the user using Django's `authenticate`
+        4. Retrieves or creates a token for the user
+        5. Returns token and user information
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
         """
-        POST-Methode für Login.
+        Handles POST requests for user login.
 
-        Request-Daten:
-        - username
-        - password
+        Request data:
+            - username
+            - password
 
-        Response (200):
-        - token: Authentifizierungs-Token
-        - username
-        - email
-        - user_id
+        Response (200 OK):
+            - token: authentication token
+            - username
+            - email
+            - user_id
 
-        Response (400):
-        - Fehler bei falschem Benutzer oder Passwort
+        Response (400 Bad Request):
+            - error: invalid username or password
         """
         username = request.data.get('username')
         password = request.data.get('password')

@@ -8,14 +8,16 @@ from rest_framework.exceptions import ValidationError
 
 class ProfileSerializer(serializers.ModelSerializer):
     """
-    Serializer für das Profile Modell.
-    Zeigt User-Daten (username, email) sowie Profilinformationen.
-    Felder:
-        - user: Verweis auf Django User
+    Serializer for the Profile model.
+    Displays user-related data (username, email) together with profile information.
+
+    Fields:
+        - user: reference to Django User
         - username, email, first_name, last_name
         - file, location, tel, description, working_hours, type
-        - created_at: Erstellungszeitpunkt
-    Update-Methode aktualisiert User-E-Mail separat.
+        - created_at: timestamp when the profile was created
+
+    The update method updates the related User email separately.
     """
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.EmailField(source='user.email', required=False)    
@@ -71,8 +73,8 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
 class BusinessProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
     """
-    Serializer für Business Profile.
-    Erweiterung des ProfileSerializers mit business-spezifischen Feldern.
+    Serializer for business profiles.
+    Extends the ProfileSerializer with business-specific fields.
     """
     class Meta:
         model = Profile
@@ -86,8 +88,8 @@ class BusinessProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
 
 class CustomerProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
     """
-    Serializer für Kundenprofile.
-    Zeigt nur Basisinformationen.
+    Serializer for customer profiles.
+    Displays only basic profile information.
     """
     class Meta:
         model = Profile
@@ -99,8 +101,10 @@ class CustomerProfileSerializer(ProfileSerializer, serializers.ModelSerializer):
 
 class OfferDetailSerializer(serializers.ModelSerializer):
     """
-    Serializer für OfferDetail Modell.
-    Felder: id, title, revisions, delivery_time_in_days, price, features, offer_type
+    Serializer for the OfferDetail model.
+
+    Fields:
+        id, title, revisions, delivery_time_in_days, price, features, offer_type
     """
     class Meta:
         model = OfferDetail
@@ -109,8 +113,8 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 
 
 class OfferDetailLinkSerializer(serializers.ModelSerializer):
-    """
-    Bietet URL-Link zu einzelnen OfferDetails über DRF reverse().
+    """"
+    Provides a URL link to a specific OfferDetail using DRF reverse().
     """
     url = serializers.SerializerMethodField()
 
@@ -125,7 +129,11 @@ class OfferDetailLinkSerializer(serializers.ModelSerializer):
 
 class OfferSerializer(serializers.ModelSerializer):
     """
-    Serializer für Offers mit Detail-Link, min_price, min_delivery_time und User-Infos.
+    Serializer for Offers including:
+        - detail links
+        - minimum price
+        - minimum delivery time
+        - user information
     """
     details = OfferDetailLinkSerializer(many=True)
     min_price = serializers.SerializerMethodField()
@@ -163,8 +171,8 @@ class OfferSerializer(serializers.ModelSerializer):
 
 class OfferCreateSerializer(serializers.ModelSerializer):
     """
-    Serializer zum Erstellen von Offers mit genau 3 Detail-Einträgen:
-    basic, standard, premium.
+    Serializer for creating Offers with exactly three detail entries:
+    basic, standard, and premium.
     """
     details = OfferDetailSerializer(many=True)
 
@@ -211,8 +219,8 @@ class OfferCreateSerializer(serializers.ModelSerializer):
 
 class OfferUpdateSerializer(serializers.ModelSerializer):
     """
-    Serializer für das Update eines Offers inkl. Details.
-    Update prüft, dass offer_type existiert, sonst Fehler.
+    Serializer for updating an Offer including its details.
+    Ensures that offer_type exists; otherwise raises a validation error.
     """
     details = OfferDetailSerializer(many=True, required=False)
 
@@ -250,7 +258,7 @@ class OfferUpdateSerializer(serializers.ModelSerializer):
 
 class OfferDetailViewSerializer(OfferSerializer, serializers.ModelSerializer):
     """
-    Serializer für detaillierte Offer-Ansicht ohne User-Details.
+    Serializer for detailed Offer view without user details.
     """
     class Meta:
         model = Offer
@@ -261,7 +269,7 @@ class OfferDetailViewSerializer(OfferSerializer, serializers.ModelSerializer):
 
 class OfferPatchSerializer(serializers.ModelSerializer):
     """
-    Serializer für PATCH Updates von Offers inkl. Details.
+    Serializer for PATCH updates of Offers including details.
     """
     details = OfferDetailSerializer(many=True)
     class Meta:
@@ -272,7 +280,7 @@ class OfferPatchSerializer(serializers.ModelSerializer):
 
 class OrderListSerializer(serializers.ModelSerializer):
     """
-    Serializer für Listendarstellung von Orders.
+    Serializer for listing Order instances.
     """
     class Meta:
         model = Order
@@ -282,9 +290,9 @@ class OrderListSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    """
-    Serializer für einzelne Order-Instanzen.
-    read_only_fields = alle Felder.
+    """"
+    Serializer for single Order instances.
+    All fields are read-only.
     """
     class Meta:
         model = Order
@@ -297,8 +305,8 @@ class OrderSerializer(serializers.ModelSerializer):
     @classmethod
     def create_from_offer_detail(cls, offer_detail, customer_user):
         """
-        Erstellt eine Order aus einem OfferDetail und einem Kunden.
-        Status wird automatisch auf 'in_progress' gesetzt.
+        Creates an Order from an OfferDetail and a customer user.
+        The status is automatically set to 'in_progress'.
         """
         return cls.Meta.model.objects.create(
             customer_user=customer_user,
@@ -316,20 +324,22 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderCreateResponseSerializer(serializers.ModelSerializer):
     """
-    Serializer für die Antwort nach Order-Erstellung.
+    Serializer for the response after creating an Order.
     """
     class Meta:
         model = Order
-        fields = ['id', 'customer_user', 'business_user', 'title', 'revisions', 
+        fields = [
+            'id', 'customer_user', 'business_user', 'title', 'revisions', 
                   'delivery_time_in_days', 'price', 'features', 'offer_type', 
-                  'status', 'created_at']
+                  'status', 'created_at'
+        ]
 
         read_only_fields = fields
 
 
 class OrderCreateSerializer(serializers.Serializer):
     """
-    Serializer zur Aktualisierung des Order-Status.
+    Serializer for creating an Order based on an OfferDetail ID.
     """
     offer_detail_id = serializers.IntegerField()
 
@@ -366,11 +376,12 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class ReviewCreateSerializer(serializers.ModelSerializer):
     """
-    Serializer für die Erstellung von Reviews.
-    Validierung:
-        - Nur Kunden dürfen bewerten.
-        - Business User muss gültig sein.
-        - Doppelte Bewertungen werden verhindert.
+    Serializer for creating Reviews.
+
+    Validation rules:
+        - Only customers are allowed to create reviews.
+        - The reviewed user must be a valid business user.
+        - Duplicate reviews are prevented.
     """
     class Meta:
         model = Review

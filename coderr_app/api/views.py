@@ -24,11 +24,15 @@ class ProfileViewSet(viewsets.GenericViewSet,
                      mixins.UpdateModelMixin,
                      mixins.ListModelMixin):
     """
-    ViewSet für Profile:
-    - Listet alle Profile
-    - Zeigt Details eines Profils
-    - Ermöglicht Update (teilweise und komplett) für den eigenen User
-    Berechtigungen: Nur authentifizierte User.
+    ViewSet for managing Profile instances.
+
+    Supports:
+        - Listing all profiles
+        - Retrieving profile details
+        - Updating (full and partial) the authenticated user's profile
+
+    Permissions:
+        - Only authenticated users are allowed.
     """
     queryset = Profile.objects.all()
     permission_classes = [IsAuthenticated]
@@ -37,9 +41,10 @@ class ProfileViewSet(viewsets.GenericViewSet,
 
     def get_serializer_class(self):
         """
-        Gibt je nach Aktion den passenden Serializer zurück:
-        - Update / Partial Update -> ProfileUpdateSerializer
-        - Andere Aktionen -> ProfileSerializer
+        Returns the appropriate serializer depending on the action:
+
+            - update / partial_update -> ProfileUpdateSerializer
+            - other actions -> ProfileSerializer
         """
         if self.action in ['update', 'partial_update']:
             return ProfileUpdateSerializer
@@ -47,9 +52,10 @@ class ProfileViewSet(viewsets.GenericViewSet,
 
     def partial_update(self, request, *args, **kwargs):
         """
-        Patch-Methode für Profilupdates.
-        Prüft, ob der authentifizierte User Besitzer des Profils ist.
-        Gibt nach Update die vollständigen Profildaten zurück.
+        Handles PATCH requests for profile updates.
+
+        Ensures that the authenticated user is the owner of the profile.
+        After updating, returns the full serialized profile data.
         """
         instance = self.get_object()
 
@@ -77,34 +83,50 @@ class ProfileViewSet(viewsets.GenericViewSet,
 
 class BusinessProfileListView(generics.ListAPIView):
     """
-    Listet alle Business-Profile.
-    Berechtigungen: Authentifizierte User
+    Lists all business profiles.
+
+    Permissions:
+        - Authenticated users only.
     """
     serializer_class = BusinessProfileSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):        
+    def get_queryset(self):      
+        """
+        Returns all profiles with type 'business'.
+        """  
         return Profile.objects.filter(type='business')
     
 
 
 class CustomerProfileListView(generics.ListAPIView):    
     """
-    Listet alle Kundenprofile.
-    Berechtigungen: Authentifizierte User
+    Lists all customer profiles.
+
+    Permissions:
+        - Authenticated users only.
     """
     serializer_class = CustomerProfileSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):        
+    def get_queryset(self):     
+        """
+        Returns all profiles with type 'customer'.
+        """   
         return Profile.objects.filter(type='customer')
     
 
 class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    CRUD View für OfferDetail:
-    - Retrieve, Update (partial), Destroy
-    Berechtigungen: Authentifizierte User, Update nur durch Besitzer des Angebots
+    CRUD view for OfferDetail:
+
+        - Retrieve
+        - Partial update
+        - Delete
+
+    Permissions:
+        - Authenticated users only
+        - Updates allowed only for the offer owner
     """
     queryset = OfferDetail.objects.all()
     serializer_class = OfferDetailSerializer
@@ -112,7 +134,10 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         """
-        Überschreibt Update, um nach Änderung des OfferDetail auch das Offer zu serialisieren
+        Overrides update behavior.
+
+        After updating the OfferDetail, the related Offer
+        is serialized and returned instead of the detail itself.
         """
         instance = self.get_object()
         offer = instance.offer
@@ -129,15 +154,25 @@ class OfferDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class OfferViewSet(viewsets.ModelViewSet):
     """
-    ViewSet für Offer:
-    - List, Retrieve, Create, Update, Partial Update, Delete
-    - Filterung über OfferFilterBackend
-    - Pagination via OfferPagination
+    ViewSet for Offer management.
 
-    Berechtigungen:
-        - List / Retrieve: Öffentlich (AllowAny)
-        - Create: Authentifiziert + BusinessUser
-        - Update / Delete: Authentifiziert + BusinessUser + OfferOwner
+    Supports:
+        - List
+        - Retrieve
+        - Create
+        - Update
+        - Partial update
+        - Delete
+
+    Features:
+        - Filtering via OfferFilterBackend
+        - Pagination via OfferPagination
+
+    Permissions:
+        - List: Public (AllowAny)
+        - Retrieve: Authenticated users
+        - Create: Authenticated business users
+        - Update/Delete: Authenticated business users who own the offer
     """
 
     queryset = Offer.objects.all().select_related('user').prefetch_related('details')
@@ -145,6 +180,9 @@ class OfferViewSet(viewsets.ModelViewSet):
     filter_backends = [OfferFilterBackend]
 
     def get_permissions(self):
+        """
+        Returns permission classes depending on the current action.
+        """
         if self.action == 'list':
              return [AllowAny()]
 
@@ -161,11 +199,12 @@ class OfferViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """
-        Gibt Serializer je nach Aktion zurück:
-        - Create -> OfferCreateSerializer
-        - Update / Partial Update -> OfferUpdateSerializer
-        - Retrieve -> OfferDetailViewSerializer
-        - Default -> OfferSerializer
+        Returns the appropriate serializer depending on the action:
+
+            - create -> OfferCreateSerializer
+            - update / partial_update -> OfferUpdateSerializer
+            - retrieve -> OfferDetailViewSerializer
+            - default -> OfferSerializer
         """
         if self.action == 'create':
             return OfferCreateSerializer
@@ -176,9 +215,18 @@ class OfferViewSet(viewsets.ModelViewSet):
         return OfferSerializer
 
     def perform_create(self, serializer):
+        """
+        Assigns the authenticated user as the offer owner during creation.
+        """
         serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        """
+        Creates a new Offer including its details.
+
+        Returns the full serialized offer representation
+        after successful creation.
+        """
         serializer = self.get_serializer(
             data=request.data,
             context={'request': request}
@@ -196,15 +244,20 @@ class OfferViewSet(viewsets.ModelViewSet):
 
 class OrderView(generics.ListCreateAPIView):
     """
-    Listet Orders je nach User-Typ:
-    - Kunde: zeigt eigene Bestellungen
-    - Business: zeigt eigene Angebote/Orders
-    Erstellt Orders aus OfferDetails für Kunden
+    Lists and creates Order instances.
+
+    Behavior:
+        - Customers see their own orders.
+        - Business users see orders related to their offers.
+        - Customers can create new orders from OfferDetails.
     """
     permission_classes = [IsAuthenticated]
     serializer_class = OrderSerializer
 
     def get_queryset(self):
+        """
+        Returns orders filtered by the authenticated user's profile type.
+        """
         user = self.request.user
         if hasattr(user, 'profile'):
             if user.profile.type == 'customer':
@@ -214,6 +267,12 @@ class OrderView(generics.ListCreateAPIView):
         return Order.objects.none()
 
     def post(self, request, *args, **kwargs):
+        """
+        Creates a new Order from an OfferDetail.
+
+        Only users with profile type 'customer' are allowed
+        to create orders.
+        """
         serializer = OrderCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -230,15 +289,22 @@ class OrderView(generics.ListCreateAPIView):
 
 class OrderDetailView(RetrieveUpdateAPIView):
     """
-    Detailansicht einer Order:
-    - PATCH: Statusupdate nur für business_user
-    - DELETE: nur Admin
+    Detailed view for a single Order.
+
+    - PATCH: Allows status updates (business user only)
+    - DELETE: Allowed for admin users only
     """
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated, IsBusinessOrderOwner]
 
     def patch(self, request, *args, **kwargs):
+        """
+        Updates the order status.
+
+        Only the business owner of the order is allowed
+        to modify the status.
+        """
         order = self.get_object()
         self.check_object_permissions(request, order)
 
@@ -248,6 +314,11 @@ class OrderDetailView(RetrieveUpdateAPIView):
         return Response(OrderSerializer(order).data, status=200)
     
     def delete(self, request, *args, **kwargs):
+        """
+        Deletes an order.
+
+        Only staff (admin) users are allowed to delete orders.
+        """
         order = self.get_object()
         if not request.user.is_staff:
             return Response({"detail": "Keine Berechtigung."}, status=403)
@@ -257,11 +328,16 @@ class OrderDetailView(RetrieveUpdateAPIView):
 
 class BusinessOrderCountView(APIView):
     """
-    API View zur Abfrage der Anzahl in-progress Orders für einen Business User
+    Returns the number of 'in_progress' orders
+    for a specific business user.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, business_user_id):
+        """
+        Retrieves the count of active (in_progress) orders
+        for the specified business user.
+        """
         business_user = get_object_or_404(User, id=business_user_id)
 
         if not hasattr(business_user, 'profile') or business_user.profile.type != 'business':
@@ -273,11 +349,16 @@ class BusinessOrderCountView(APIView):
 
 class BusinessCompletedOrderCountView(APIView):
     """
-    API View zur Abfrage der Anzahl abgeschlossener Orders für einen Business User
+    Returns the number of completed orders
+    for a specific business user.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, business_user_id):
+        """
+        Retrieves the count of completed orders
+        for the specified business user.
+        """
         business_user = get_object_or_404(User, id=business_user_id)
 
         if not hasattr(business_user, 'profile') or business_user.profile.type != 'business':
@@ -289,15 +370,19 @@ class BusinessCompletedOrderCountView(APIView):
 
 class ReviewListView(ListCreateAPIView):
     """
-    Listet Reviews und ermöglicht Erstellung neuer Reviews.
-    Filterbar nach:
+    Lists and creates Review instances.
+
+    Supports filtering by:
         - business_user_id
         - reviewer_id
-        - ordering: rating, updated_at
+        - ordering (rating, updated_at)
     """
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        """
+        Returns reviews filtered by query parameters.
+        """
         queryset = Review.objects.all()
         params = self.request.query_params
 
@@ -314,9 +399,16 @@ class ReviewListView(ListCreateAPIView):
         return queryset
 
     def get_serializer_class(self):
+        """
+        Returns ReviewCreateSerializer for POST requests,
+        otherwise ReviewSerializer.
+        """
         return ReviewCreateSerializer if self.request.method == 'POST' else ReviewSerializer
 
     def create(self, request, *args, **kwargs):
+        """
+        Creates a new review and returns the full review representation.
+        """
         serializer = ReviewCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         review = serializer.save()
@@ -325,15 +417,21 @@ class ReviewListView(ListCreateAPIView):
 
 class ReviewDetailView(RetrieveUpdateDestroyAPIView):
     """
-    Detailansicht eines Reviews:
-    - Patch: Nur Ersteller darf bearbeiten
-    - Delete: Nur Ersteller darf löschen
+    Detailed view for a single Review.
+
+    - PATCH: Only the review author can edit
+    - DELETE: Only the review author can delete
     """
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, *args, **kwargs):
+        """
+        Updates rating and/or description.
+
+        Only the review author is allowed to modify the review.
+        """
         review = self.get_object()
 
         if review.reviewer != request.user:
@@ -354,6 +452,11 @@ class ReviewDetailView(RetrieveUpdateDestroyAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, *args, **kwargs):
+        """
+        Deletes the review.
+
+        Only the review author is allowed to delete it.
+        """
         review = self.get_object()
 
         if review.reviewer != request.user:
@@ -368,12 +471,14 @@ class ReviewDetailView(RetrieveUpdateDestroyAPIView):
 
 class BaseInfoView(APIView):
     """
-    Liefert Basisinformationen für die Plattform:
-    - Gesamtzahl Reviews
-    - Durchschnittliche Bewertung
-    - Anzahl Business Profiles
-    - Anzahl Offers
-    Zugänglich für alle (AllowAny)
+    Provides general platform statistics:
+
+        - Total number of reviews
+        - Average rating
+        - Number of business profiles
+        - Number of offers
+
+    Accessible to everyone (AllowAny).
     """
     permission_classes = [AllowAny]
 
