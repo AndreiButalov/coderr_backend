@@ -387,7 +387,7 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
             raise ValidationError("Bewertungen dürfen nur für Business-User erstellt werden.")
 
         if Review.objects.filter(business_user=business, reviewer=user).exists():
-            raise PermissionDenied("Bereits bewertet.")
+             raise ValidationError("Du hast diesen Business-User bereits bewertet.")
 
         return attrs
 

@@ -146,11 +146,9 @@ class OfferViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'list':
-        # Liste öffentlich
              return [AllowAny()]
 
         if self.action == 'retrieve':
-            # Detail nur für authentifizierte User
             return [IsAuthenticated()]
 
         if self.action == 'create':
