@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from coderr_app.models import Profile, OfferDetail, Offer, Order, Review
 from rest_framework.reverse import reverse
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.exceptions import ValidationError
 
 
 class ProfileSerializer(serializers.ModelSerializer):

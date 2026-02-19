@@ -32,6 +32,8 @@ class ProfileViewSet(viewsets.GenericViewSet,
     """
     queryset = Profile.objects.all()
     permission_classes = [IsAuthenticated]
+    lookup_field = 'user'
+    lookup_url_kwarg = 'user_id'
 
     def get_serializer_class(self):
         """
