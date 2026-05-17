@@ -76,6 +76,12 @@ The project supports image uploads, role-based profiles, and a clean REST API st
 
 1. **Projekt klonen**
   ```bash
+
+  # Frontend
+  git clone https://github.com/AndreiButalov/coderr_frontend.git
+
+
+  # Backend
   git clone https://github.com/AndreiButalov/coderr_backend.git  
 
 # 🖥 Setup on Windows
