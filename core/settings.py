@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-&k9i9dn@2rv!^qk6own3(6xl4v6qphp6@&wi$xq1k(tdwvakl8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['andrei-butalov.de', 'www.andrei-butalov.de']
 
 
 # Application definition
@@ -56,20 +56,14 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:5501",
+    "https://andrei-butalov.de",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-]
-
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
+    "https://andrei-butalov.de",
 ]
 
 ROOT_URLCONF = 'core.urls'
