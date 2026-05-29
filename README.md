@@ -78,7 +78,7 @@ The project supports image uploads, role-based profiles, and a clean REST API st
   ```bash
 
   # Frontend
-  git clone https://github.com/AndreiButalov/coderr_frontend.git
+  https://andrei-butalov.de/coderr/index.html
 
 
   # Backend
